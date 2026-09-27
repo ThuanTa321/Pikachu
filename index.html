@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pikachu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+        <h1>Pikachu</h1>
+        <!-- Chọn lv -->
+        <div class="menu-lv">
+            <p>Chọn cấp độ để bắt đầu</p>
+            <div class="level-button">
+                <div class="level-btn" onclick="SetLv(0)">Chơi</div>
+                <div class="level-btn" onclick="SetLv(1)">Level 1</div>
+                <div class="level-btn" onclick="SetLv(2)">Level 2</div>
+                <div class="level-btn" onclick="SetLv(3)">Level 3</div>
+                <div class="level-btn" onclick="SetLv(4)">Level 4</div>
+                <div class="level-btn" onclick="SetLv(5)">Level 5</div>
+            </div>
+        </div>
+
+        <!-- play game -->
+        <div class="menu-game">
+            <div class="menu">
+                <div>Điểm: <span id="core">0</span></div>
+                <div>Thời gian: <span id="time">---</span>s</div>
+            </div>
+
+            <div class="help">
+                <div id="board">
+                    <svg id="game"></svg>
+                    <div id="overlay"><p id="overlay-text"></p><button id="overlay-btn">Trộn lại</button></div>
+                </div>
+            </div>
+
+            <div class="restart-button">
+                <button class="restart" onclick="Setreplay">Chơi lại</button>
+                <button class="back-to-menu" onclick="SetLV">Chọn lại cấp độ</button>
+            </div>
+        </div>
+
+</body>
+</html>

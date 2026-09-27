@@ -1,0 +1,145 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  background: #5b76a5;
+  color: #f4f4f8;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 12px 40px;
+}
+
+h1 {
+  font-family: sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  margin: 4px 0;
+}
+
+.menu-lv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: #232a52;
+  border-radius: 16px;
+  padding: 36px 28px;
+  margin-top: 20px;
+}
+.menu-lv p {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.level-button {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 200px;
+}
+.level-button .level-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #e6c429;
+  border-radius: 1000px;
+  padding: 16px;
+  font-weight: 600;
+}
+.level-button .level-btn:hover {
+  background: #ff6b6b;
+}
+.level-button .level-btn:active {
+  transform: scale(1.1);
+}
+
+.menu-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.menu {
+  display: flex;
+  gap: 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+.menu span {
+  color: #ff6b6b;
+}
+
+.help {
+  position: relative;
+  width: min(92vw, 480px);
+  aspect-ratio: 1/1;
+}
+
+#board {
+  position: absolute;
+  display: grid;
+  gap: 4px;
+  background: #232a52;
+  border-radius: 20px;
+  padding: 8px;
+}
+
+#game {
+  position: absolute;
+  overflow: visible;
+}
+
+#overlay {
+  position: absolute;
+  background: rgba(10, 12, 30, 0.92);
+  border-radius: 20px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 16px;
+}
+#overlay p {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.restart-button {
+  display: flex;
+  gap: 16px;
+}
+.restart-button button {
+  font: inherit;
+  font-weight: bold;
+  font-family: sans-serif;
+  padding: 10px 22px;
+  border: none;
+  border-radius: 999px;
+  background: black;
+  color: white;
+}
+.restart-button button:hover {
+  background: #220898;
+}
+.restart-button button:active {
+  transform: scale(1.1);
+}
+
+.back-to-menu {
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+}
+
+/*# sourceMappingURL=style.css.map */
