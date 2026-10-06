@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Pikachu</title>
     <link rel="stylesheet" href="style.css">
+    <script src="index.js" defer></script>
 </head>
 <body>
 
@@ -12,19 +13,19 @@
         <div class="menu-lv">
             <p>Chọn cấp độ để bắt đầu</p>
             <div class="level-button">
-                <div class="level-btn" onclick="SetLv(0)">Chơi</div>
-                <div class="level-btn" onclick="SetLv(1)">Level 1</div>
-                <div class="level-btn" onclick="SetLv(2)">Level 2</div>
-                <div class="level-btn" onclick="SetLv(3)">Level 3</div>
-                <div class="level-btn" onclick="SetLv(4)">Level 4</div>
-                <div class="level-btn" onclick="SetLv(5)">Level 5</div>
+                <button class="level-btn" onclick="SetLv(0)">Chơi</button>
+                <button class="level-btn" onclick="SetLv(1)">Level 1</button>
+                <button class="level-btn" onclick="SetLv(2)">Level 2</button>
+                <button class="level-btn" onclick="SetLv(3)">Level 3</button>
+                <button class="level-btn" onclick="SetLv(4)">Level 4</button>
+                <button class="level-btn" onclick="SetLv(5)">Level 5</button>
             </div>
         </div>
 
         <!-- play game -->
         <div class="menu-game">
             <div class="menu">
-                <div>Điểm: <span id="core">0</span></div>
+                <div>Điểm: <span id="score">0</span></div>
                 <div>Thời gian: <span id="time">---</span>s</div>
             </div>
 
@@ -36,8 +37,8 @@
             </div>
 
             <div class="restart-button">
-                <button class="restart" onclick="Setreplay">Chơi lại</button>
-                <button class="back-to-menu" onclick="SetLV">Chọn lại cấp độ</button>
+                <button class="restart" onclick="SetReplay()">Chơi lại</button>
+                <button class="back-to-menu" onclick="SetMenu()">Chọn lại cấp độ</button>
             </div>
         </div>
 
