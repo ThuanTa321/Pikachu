@@ -8,7 +8,7 @@
 </head>
 <body>
 
-        <h1>Pikachu</h1>
+        <h1 class="title">Pikachu</h1>
         <!-- Chọn lv -->
         <div class="menu-lv">
             <p>Chọn cấp độ để bắt đầu</p>
@@ -29,18 +29,17 @@
                 <div>Thời gian: <span id="time">---</span>s</div>
             </div>
 
-            <div class="help">
-                <div id="board">
+            <div id="board">
                     <svg id="game"></svg>
-                    <div id="overlay"><p id="overlay-text"></p><button id="overlay-btn">Trộn lại</button></div>
-                </div>
+                    <div id="overlay"><p id="overlay-text"></p>
+            </div>
             </div>
 
             <div class="restart-button">
+                <button class="shuffle" onclick="shuffleBoard()">Trộn lại</button></div>
                 <button class="restart" onclick="SetReplay()">Chơi lại</button>
                 <button class="back-to-menu" onclick="SetMenu()">Chọn lại cấp độ</button>
             </div>
-        </div>
 
 </body>
 </html>
