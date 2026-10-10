@@ -1,5 +1,5 @@
-let rows = 4;
-let cols = 4;
+let rows;
+let cols;
 const cellSize = 70;
 const SVG_NS = "http://www.w3.org/2000/svg";
 const img_count = 36;
@@ -17,10 +17,12 @@ let board = [];
 let pick = null;
 let score = 0;
 let currentLevel = 0;
-let timeLeft = 60;
+let timeLeft = 180;
 let timeId = null;
 let isOver = false;
 let isDrawing = false;
+let hintTiles = [];
+let hintId = null;
 
 menuGame.style.display = "none";
 
@@ -28,8 +30,8 @@ menuGame.style.display = "none";
 function SetLv(level) {
     currentLevel = level;
     if (currentLevel === 0) {
-        rows = 4;
-        cols = 4;
+        rows = 7;
+        cols = 7;
     }
     else {
         rows = 9;
@@ -47,10 +49,69 @@ function SetLv(level) {
     console.log("Đang chơi Level: " + currentLevel);
 }
 
+//level2 - don theo hang va cot
+function level2() {
+    //cot
+    for (let col = 0; col < cols; col += 2) { //dò cột lẻ, mảng là 024
+        const tiles = [];
+        for (let row = 0; row < rows; row++) {
+            if (board[row][col] !== "") {
+                tiles.push(board[row][col]);
+            }
+        }
+        for (let row = 0; row < rows; row++) board[row][col] = tiles[row] ?? "";
+    }
+    for (let col = 1; col < cols; col += 2) {   //dò cột chẵn
+        const tiles = [];
+        for (let row = 0; row < rows; row++) {
+            if (board[row][col] !== "") {
+                tiles.push(board[row][col]);
+            }
+        }
+        for (let row = 0; row < rows; row++) board[row][col] = "";
+        for (let i = 0; i < tiles.length; i++) board[rows - tiles.length + i][col] = tiles[i];
+    }
+
+    //hang
+    for (let row = 1; row < rows; row += 2) { //dò hàng chẵn
+        const tiles = [];
+        for (let col = 0; col < cols; col++) {
+            if (board[row][col] !== "") {
+                tiles.push(board[row][col]);
+            }
+        }
+        for (let col = 0; col < cols; col++) board[row][col] = tiles[col] ?? "";
+    }
+    for (let row = 0; row < rows; row += 2) {
+        const tiles = [];
+        for (let col = 0; col < cols; col++) {
+            if (board[row][col] !== "") {
+                tiles.push(board[row][col]);
+            }
+        }
+        for (let col = 0; col < cols; col++) board[row][col] = "";
+        for (let i = 0; i < tiles.length; i++) board[row][cols - tiles.length + i] = tiles[i];
+    }
+}
+
+//level3 - don theo huong
+function level3() {
+
+}
+//level4 -
+function level4() {
+
+}
+
+//level5
+function level5() {
+
+}
+
 //tinh gio
 function startTimer() {
     stopTimer();
-    timeLeft = 60;
+    timeLeft = 180;
     timeText.textContent = timeLeft;
     timeId = setInterval(function () {
         timeLeft--;
@@ -67,7 +128,6 @@ function stopTimer() {
     timeId = null;
 }
 
-//chơi lại
 function SetReplay() {
     SetLv(currentLevel);
 }
@@ -178,6 +238,9 @@ function drawBoard() {
             const y = row * cellSize;
 
             const isPick = pick !== null && pick.row === row && pick.col === col;
+            const isHint = hintTiles.some(function (tile) {
+                return tile.row === row && tile.col === col;
+            })
             const rect = createSVG("rect", {
                 x: x + 3,
                 y: y + 3,
@@ -194,7 +257,7 @@ function drawBoard() {
             })
 
             const gr = createSVG("g", {
-                class: isPick ? "tile picked" : "tile"
+                class: isPick ? "tile picked" : (isHint ? "tile: hint" : "tile")
             });
             gr.appendChild(rect);
             gr.appendChild(img);
@@ -246,11 +309,12 @@ function selectTitle(row, col) {
     drawLine(path);
     const firstPick = pick;
     setTimeout(function () {
-        board[firstPick.row][firstPick.col] = "";
+        board[firstPick.row][firstPick.col] = "";   //xoa da ghep
         board[row][col] = "";
         score = score + 10;
         scoreText.textContent = score;
         pick = null;
+        applyLevelEffect();
         isDrawing = false;
         drawBoard();
         checkWin();
@@ -336,6 +400,29 @@ function findPath(r1, c1, r2, c2) {
         }
     }
     return [];
+}
+
+function applyLevelEffect() {
+    switch (currentLevel) {
+        case 1:
+            break;
+        case 2:
+            level2();
+            break;
+        case 3:
+            level3();
+            break;
+        case 4:
+            level4();
+            break;
+        case 5:
+            level5();
+            break;
+    }
+}
+
+function hint() {
+
 }
 
 //check win

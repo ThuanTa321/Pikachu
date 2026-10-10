@@ -88,11 +88,11 @@ h1 {
 }
 
 #board {
-  width: 1200px;
-  height: 750px;
+  width: 1150px;
+  height: 700px;
   justify-content: center;
   position: relative;
-  padding: 12px;
+  padding: 10px;
   display: grid;
   gap: 4px;
   background: #232a52;
@@ -102,10 +102,11 @@ h1 {
 }
 
 #game {
+  justify-content: center;
   overflow: visible;
   display: block;
-  width: 1100px;
-  height: 750px;
+  width: 1050px;
+  height: 700px;
 }
 #game .path-line {
   fill: none;
@@ -171,6 +172,15 @@ h1 {
 }
 #overlay button:hover {
   background: #ffe074;
+}
+
+.hint {
+  padding: 16px;
+  margin: 10px;
+  border-radius: 100%;
+  width: 50px;
+  height: 50px;
+  background: #ecd688;
 }
 
 .shuffle {
