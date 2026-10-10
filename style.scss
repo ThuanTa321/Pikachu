@@ -72,15 +72,24 @@ h1 {
 //man hinh choi
 .menu-game {
   display: none;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
   width: 100%;
 }
 
+.left-panel {
+  width: 180px;
+  padding: 20px;
+  background: #464d93;
+  border-radius: 16px;
+}
+
 .menu {
+  height: 100px;
   display: flex;
-  gap: 20px;
+  gap:16px;
+  flex-direction: column;
   flex-wrap: wrap;
   justify-content: center;
 
@@ -91,7 +100,7 @@ h1 {
 
 #board {
   width: 1200px;
-  height: 850px;
+  height: 750px;
   justify-content: center;
   position: relative;
   padding: 12px;
@@ -104,9 +113,10 @@ h1 {
 }
 
 #game {
+  overflow: visible;
   display: block;
   width: 1100px;
-  height: 800px;
+  height: 750px;
 
   //ve duong an
   .path-line {
@@ -205,6 +215,7 @@ h1 {
 .restart-button {
   display: flex;
   gap: 16px;
+  flex-direction: column;
   flex-wrap: wrap;
   justify-content: center;
 
