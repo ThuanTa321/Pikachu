@@ -5,6 +5,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const img_count = 36;
 const img_path = "./images/pieces";
 const img_ext = ".png";
+const maxHint = 999;
 
 const svg = document.getElementById("game");
 const scoreText = document.getElementById("score");
@@ -12,6 +13,8 @@ const timeText = document.getElementById("time");
 const menuLV = document.querySelector(".menu-lv");
 const menuGame = document.querySelector(".menu-game");
 const overlayText = document.getElementById("overlay-text");
+const hintButton = document.getElementById("hint");
+const hintCount = document.getElementById("hint-count");
 
 let board = [];
 let pick = null;
@@ -21,8 +24,9 @@ let timeLeft = 180;
 let timeId = null;
 let isOver = false;
 let isDrawing = false;
+let hintLeft = maxHint;
 let hintTiles = [];
-let hintId = null;
+let hintTimer = null;
 
 menuGame.style.display = "none";
 
@@ -43,6 +47,10 @@ function SetLv(level) {
     scoreText.textContent = score;
     pick = null;
     isOver = false;
+    hintLeft = maxHint;
+    hintTiles = [];
+
+    updateHint();
     createBoard();
     drawBoard();
     startTimer();
@@ -257,7 +265,7 @@ function drawBoard() {
             })
 
             const gr = createSVG("g", {
-                class: isPick ? "tile picked" : (isHint ? "tile: hint" : "tile")
+                class: isPick ? "tile picked" : (isHint ? "tile hint" : "tile")
             });
             gr.appendChild(rect);
             gr.appendChild(img);
@@ -421,8 +429,43 @@ function applyLevelEffect() {
     }
 }
 
-function hint() {
+function updateHint() {
+    hintCount.textContent = hintLeft;
+    hintButton.disabled = hintLeft <= 0;
+}
 
+function hint() {
+    if (isOver || isDrawing || hintLeft <= 0) return;
+    for (let row1 = 0; row1 < rows; row1++) {
+        for (let col1 = 0; col1 < cols; col1++) {
+            const firtTile = board[row1][col1];
+
+            if (firtTile === "") continue;
+            for (let row2 = row1; row2 < rows; row2++) {
+                const startCol = row1 === row2 ? col1 + 1 : 0;      //cùng hàng thì bắt đầu ở ô tiếp theo
+
+                for (let col2 = startCol; col2 < cols; col2++) {
+                    const secondTile = board[row2][col2];
+                    if (firtTile !== secondTile) continue;
+                    const path = findPath(row1, col1, row2, col2); // dùng BFS
+                    if (path.length > 0) {
+                        hintLeft--;
+                        updateHint();
+                        hintTiles = [{ row: row1, col: col1},
+                                     { row: row2, col: col2},];
+                        drawBoard();
+                        clearTimeout(hintTimer);
+                        hintTimer = setTimeout(function () {
+                            hintTiles = [];
+                            drawBoard();
+                        }, 1000);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    alert("không phát hiện ra cặp để nối.");
 }
 
 //check win
