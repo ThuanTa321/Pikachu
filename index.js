@@ -15,6 +15,8 @@ const menuGame = document.querySelector(".menu-game");
 const overlayText = document.getElementById("overlay-text");
 const hintButton = document.getElementById("hint");
 const hintCount = document.getElementById("hint-count");
+const overlay = document.getElementById("overlay");
+const nextLevel = document.getElementById("next-level");
 
 let board = [];
 let pick = null;
@@ -47,6 +49,7 @@ function SetLv(level) {
     scoreText.textContent = score;
     pick = null;
     isOver = false;
+    overlay.style.display = "none";
     hintLeft = maxHint;
     hintTiles = [];
 
@@ -55,6 +58,12 @@ function SetLv(level) {
     drawBoard();
     startTimer();
     console.log("Đang chơi Level: " + currentLevel);
+}
+
+function NextLevel() {
+    if (currentLevel < 6) {
+        SetLv(currentLevel + 1);
+    }
 }
 
 //level2 - don theo hang va cot
@@ -113,6 +122,11 @@ function level4() {
 
 //level5
 function level5() {
+
+}
+
+//level6
+function level6() {
 
 }
 
@@ -426,6 +440,9 @@ function applyLevelEffect() {
         case 5:
             level5();
             break;
+        case 6:
+            level5();
+            break;
     }
 }
 
@@ -451,15 +468,26 @@ function hint() {
                     if (path.length > 0) {
                         hintLeft--;
                         updateHint();
+                        isDrawing = true;
                         hintTiles = [{ row: row1, col: col1},
                                      { row: row2, col: col2},];
                         drawBoard();
-                        clearTimeout(hintTimer);
-                        hintTimer = setTimeout(function () {
-                            hintTiles = [];
-                            drawBoard();
-                        }, 1000);
-                        return;
+                        setTimeout(function () {
+                            drawLine(path);
+
+                            setTimeout(function () {
+                                board[row1][col1] = "";
+                                board[row2][col2] = "";
+                                score += 10;
+                                scoreText.textContent = score;
+                                hintTiles = [];
+                                pick = null;
+                                applyLevelEffect();
+                                isDrawing = false;
+                                drawBoard();
+                                checkWin();
+                            },100);
+                        },200); return;
                     }
                 }
             }
@@ -488,5 +516,5 @@ function checkWin() {
 
 function showOverlay(msg) {
     overlayText.textContent = msg;
-    overlayText.style.display = "flex";
+    overlay.style.display = "flex";
 }

@@ -13,12 +13,12 @@
         <div class="menu-lv">
             <p>Chọn cấp độ để bắt đầu</p>
             <div class="level-button">
-                <button class="level-btn" onclick="SetLv(0)">Chơi</button>
                 <button class="level-btn" onclick="SetLv(1)">Level 1</button>
                 <button class="level-btn" onclick="SetLv(2)">Level 2</button>
                 <button class="level-btn" onclick="SetLv(3)">Level 3</button>
                 <button class="level-btn" onclick="SetLv(4)">Level 4</button>
                 <button class="level-btn" onclick="SetLv(5)">Level 5</button>
+                <button class="level-btn" onclick="SetLv(6)">Level 6</button>
             </div>
         </div>
 
@@ -39,7 +39,13 @@
 
             <div id="board">
                     <svg id="game"></svg>
-                <div id="overlay"><p id="overlay-text"></p></div>
+                <div id="overlay"><p id="overlay-text"></p>
+                    <div class="overlay-button">
+                        <button onclick="SetReplay()">Chơi lại</button>
+                        <button onclick="SetMenu()">Chọn level</button>
+                        <button id="next-level" onclick="NextLevel()">Level tiếp theo</button>
+                    </div>
+                </div>
             </div>
         </div>
 
