@@ -111,9 +111,37 @@ function level2() {
     }
 }
 
-//level3 - don theo huong
+//level3 - don vao giua
 function level3() {
+    //theo chieu ngang
+    for (let row = 0; row < rows; row++) {
+        const tiles = [];
+        for (let col = 0; col < cols; col++) {
+            if (board[row][col] !== "") {
+                tiles.push(board[row][col]);
+            }
+        }
+        for (let col = 0; col < cols; col++) {
+            board[row][col] = "";
+        }
+        const startCol = Math.floor((cols - tiles.length) / 2);
+        for (let i = 0; i < tiles.length; i++) board[row][startCol + i] = tiles[i];
+    }
 
+    //theo chieu doc
+    for (let col = 0; col < cols; col++) {
+        const tiles = [];
+        for (let row = 0; row < rows; row++) {
+            if (board[row][col] !== "") {
+                tiles.push(board[row][col]);
+            }
+        }
+        for (let row = 0; row < rows; row++) {
+            board[row][col] = "";
+        }
+        const startRow = Math.floor((rows - tiles.length) / 2);
+        for (let i = 0; i < tiles.length; i++) board[startRow + i][col] = tiles[i];
+    }
 }
 //level4 -
 function level4() {
@@ -372,27 +400,26 @@ function centerOf(index, max) {
 }
 
 //tim duong di (BFS)
+function canGo(row, col, endRow, endCol) {
+    if (row < -1 || row > rows || col < -1 || col > cols) return false;
+    if (row === endRow && col === endCol) return true;
+    if (row < 0 || row >= rows || col < 0 || col >= cols) return true;
+    return board[row][col] === "";
+}
+
 function findPath(r1, c1, r2, c2) {
     const directions = [[-1, 0], [0, 1], [1, 0], [0, -1]];
-    const maxRow = rows + 1;
-    const maxCol = cols + 1;
-    const startRow = r1 + 1;
-    const startCol = c1 + 1;
-    const endRow = r2 + 1;
-    const endCol = c2 + 1;
     const queue = [{
-        row: startRow, col: startCol,
+        row: r1, col: c1,
         direction: -1,
         turns: 0,
         path: [{row: r1, col: c1}]
     }];
 
     const visited = new Set();
-    let index = 0;
-    while (index < queue.length) {
-        const current = queue[index];
-        index++;
-        if (current.row === endRow && current.col === endCol) return current.path;
+    while (queue.length > 0) {
+        const current = queue.shift();
+        if (current.row === r2 && current.col === c2) return current.path;
 
         for (let i = 0; i < 4; i++) {
             let turns = current.turns;
@@ -401,23 +428,15 @@ function findPath(r1, c1, r2, c2) {
 
             const nextRow = current.row + directions[i][0];
             const nextCol = current.col + directions[i][1];
-            if (nextRow < 0 || nextRow > maxRow || nextCol < 0 || nextCol > maxCol) continue;
+            if (!canGo(nextRow, nextCol, r2, c2)) continue;
 
-            const isEnd = nextRow === endRow && nextCol === endCol;
-            const insideBoard = nextRow >= 1 && nextRow <= rows && nextCol >= 1 && nextCol <= cols; //kt co bi chan ko?
-            if (insideBoard && !isEnd) {
-                const tile = board[nextRow - 1][nextCol - 1];
-                if (tile !== "") continue;
-            }
             const key = nextRow + "-" + nextCol + "-" + i + "-" + turns;
             if (visited.has(key)) continue;
             visited.add(key);
             queue.push({
                 row: nextRow, col: nextCol,
                 direction: i, turns: turns,
-                path: current.path.concat({
-                    row: nextRow - 1, col: nextCol - 1  //-1 la dang o vien ngoai ban co
-                })
+                path: current.path.concat({row: nextRow, col: nextCol})
             });
         }
     }
@@ -487,7 +506,7 @@ function hint() {
                                 drawBoard();
                                 checkWin();
                             },100);
-                        },200); return;
+                        },100); return;
                     }
                 }
             }
