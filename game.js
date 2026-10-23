@@ -6,6 +6,10 @@ const img_count = 36;
 const img_path = "./images/pieces";
 const img_ext = ".png";
 const maxHint = 999;
+const level_rule =    { 4:{stoneMin: 8, stoneMax: 10}, 5:{cardBack: 14},};
+const img_card = "";
+const img_stone = "./images/rock.png";
+const stone = "#";
 
 const svg = document.getElementById("game");
 const scoreText = document.getElementById("score");
@@ -28,18 +32,14 @@ let isOver = false;
 let isDrawing = false;
 let hintLeft = maxHint;
 let hintTiles = [];
-let hintTimer = null;
+let spiral = [];
 
 menuGame.style.display = "none";
 
 //chon lv
 function SetLv(level) {
     currentLevel = level;
-    if (currentLevel === 0) {
-        rows = 7;
-        cols = 7;
-    }
-    else {
+    if (currentLevel < 7) {
         rows = 9;
         cols = 16;
     }
@@ -54,6 +54,7 @@ function SetLv(level) {
     hintTiles = [];
 
     updateHint();
+    spiral = spiralOder(rows, cols);
     createBoard();
     drawBoard();
     startTimer();
@@ -143,9 +144,46 @@ function level3() {
         for (let i = 0; i < tiles.length; i++) board[startRow + i][col] = tiles[i];
     }
 }
-//level4 -
+//level4 - don xoan oc va da chan duong
+function spiralOder(rows, cols) {   //xoắn từ trong ra ngoài
+    const oder = [];
+    let top = 0, bottom = rows - 1, left = 0, right = cols - 1;
+    while (top <= bottom && left <= right) {
+        for (let col = left; col <= right; col++) oder.push([top, col]);
+        for (let row = top + 1; row <= bottom; row++) oder.push([row, right]);
+        if (top < bottom) {
+            for (let col = right -1; col >= left; col--) oder.push([bottom, col]);
+        }
+        if (left < right) {
+            for (let row = bottom -1; row > top; row--) oder.push([row, left]);
+        }
+        top++, bottom--, left++, right--;
+    }
+    return oder;
+}
+function move(from, to) {
+    const tiles = [];
+    for (let i = from; i <= to; i++) {      //gom the
+        const row = spiral[i][0];
+        const col = spiral[i][1];
+        if (board[row][col] !== "") tiles.push(board[row][col]);
+    }
+    for (let i = from; i <= to; i++) {  //xep lai
+        const row = spiral[i][0];
+        const col = spiral[i][1];
+        board[row][col] = tiles[i - from] ?? "";
+    }
+}
 function level4() {
-
+    let start = 0;
+    for (let i = 0; i <= spiral.length; i++) {
+        const isEnd = i === spiral.length;
+        const isStone = !isEnd && board[spiral[i][0]][spiral[i][1]] === stone;
+        if (isEnd || isStone) {
+            move(start, i - 1);
+            start = i + 1;
+        }
+    }
 }
 
 //level5
@@ -190,22 +228,20 @@ function SetMenu() {
 }
 
 //tao cap anh
-function createTiles() {
+function createTiles(total) {
     const tiles = [];
-    const  total = rows * cols;
     const temp = currentLevel === 0 ? 2 : 4;
-    const kind = total / temp;
     const id = [];
 
-    for (let i = 1; i <= img_count; i++) {
-        id.push(i);
-    }
+    for (let i = 1; i <= img_count; i++) id.push(i);
     shuffleArray(id);
 
-    for (let i = 0; i < kind; i++) {
-        for (let j = 0; j < temp; j++) {
-            tiles.push(id[i]);
-        }
+    let remain = total, k = 0;
+    while (remain > 0) {
+        const n = Math.min(temp, remain);
+        for (let j = 0; j < n; j++) tiles.push(id[k % id.length]);
+        remain -= n;
+        k++;
     }
     return tiles;
 }
@@ -221,7 +257,15 @@ function createSVG(name, attributes) {
 
 //tao bang game
 function createBoard(){
-    const temp = createTiles();
+    const stoneSet = new Set();
+    if (currentLevel === 4) {
+        const count = Math.random() < 0.5 ? 8 : 10;
+        while (stoneSet.size < count) {
+            stoneSet.add(Math.floor(Math.random() * rows * cols));
+        }
+    }
+
+    const temp = createTiles(rows * cols - stoneSet.size);
     shuffleArray(temp);
     board = [];
     let index = 0;
@@ -229,46 +273,14 @@ function createBoard(){
     for (let row = 0; row < rows; row++) {
         board[row] = [];
         for (let col = 0; col < cols; col++) {
-            board[row][col] = temp[index];
-            index++;
-        }
-    }
-}
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-}
-
-//tron lai
-function shuffleBoard() {
-    if (isOver) return;
-    const tiles = [];
-
-    for (let row = 0; row < rows; row++) {  //ham gom hinh
-        for (let col = 0; col < cols; col++) {
-            if (board[row][col] !== "") {
-                tiles.push(board[row][col]);
-            }
-        }
-    }
-
-    shuffleArray(tiles);
-    let index = 0;
-    for (let row = 0; row < rows; row++) {  //xep vao mang
-        for (let col = 0; col < cols; col++) {
-            if (board[row][col] !== "") {
-                board[row][col] = tiles[index];
+            if (stoneSet.has(row * cols + col)) {
+                board[row][col] = stone;
+            } else {
+                board[row][col] = temp[index];
                 index++;
             }
         }
     }
-    pick = null;
-    drawBoard();
 }
 
 //ve bang game
@@ -286,6 +298,17 @@ function drawBoard() {
             }
             const x = col * cellSize;
             const y = row * cellSize;
+
+            if (id === stone) { //ve da
+                const g = createSVG("g", {class: "stone"});
+                g.appendChild(createSVG("rect", { x: x + 3, y: y + 3,
+                    width: cellSize - 6, height: cellSize - 6, rx: 10}));
+                g.appendChild(createSVG("image", {
+                    href: img_stone, x: x + 10, y: y + 10,
+                    width: cellSize - 20, height: cellSize - 20}))
+                svg.appendChild(g);
+                continue;
+            }
 
             const isPick = pick !== null && pick.row === row && pick.col === col;
             const isHint = hintTiles.some(function (tile) {
@@ -316,6 +339,42 @@ function drawBoard() {
             });
             svg.appendChild(gr);
         }
+    }
+}
+
+//tron lai
+function shuffleBoard() {
+    if (isOver) return;
+    const tiles = [];
+
+    for (let row = 0; row < rows; row++) {  //ham gom hinh
+        for (let col = 0; col < cols; col++) {
+            if (board[row][col] !== "" && board[row][col] !== stone) {
+                tiles.push(board[row][col]);
+            }
+        }
+    }
+
+    shuffleArray(tiles);
+    let index = 0;
+    for (let row = 0; row < rows; row++) {  //xep vao mang
+        for (let col = 0; col < cols; col++) {
+            if (board[row][col] !== "" && board[row][col] !== stone) {
+                board[row][col] = tiles[index];
+                index++;
+            }
+        }
+    }
+    pick = null;
+    drawBoard();
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
     }
 }
 
@@ -409,12 +468,9 @@ function canGo(row, col, endRow, endCol) {
 
 function findPath(r1, c1, r2, c2) {
     const directions = [[-1, 0], [0, 1], [1, 0], [0, -1]];
-    const queue = [{
-        row: r1, col: c1,
-        direction: -1,
-        turns: 0,
-        path: [{row: r1, col: c1}]
-    }];
+    const queue = [{ row: r1, col: c1,
+                                            direction: -1, turns: 0,
+                                            path: [{row: r1, col: c1}]}];
 
     const visited = new Set();
     while (queue.length > 0) {
@@ -460,7 +516,7 @@ function applyLevelEffect() {
             level5();
             break;
         case 6:
-            level5();
+            level6();
             break;
     }
 }
@@ -476,7 +532,7 @@ function hint() {
         for (let col1 = 0; col1 < cols; col1++) {
             const firtTile = board[row1][col1];
 
-            if (firtTile === "") continue;
+            if (firtTile === "" || firtTile === stone) continue;
             for (let row2 = row1; row2 < rows; row2++) {
                 const startCol = row1 === row2 ? col1 + 1 : 0;      //cùng hàng thì bắt đầu ở ô tiếp theo
 
@@ -520,7 +576,7 @@ function checkWin() {
     let res = 0;
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-            if (board[row][col] !== "") {
+            if (board[row][col] !== "" && board[row][col] !== stone) {
                 res++;
             }
         }
