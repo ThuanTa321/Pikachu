@@ -7,7 +7,7 @@ const img_path = "./images/pieces";
 const img_ext = ".png";
 const maxHint = 999;
 const level_rule =    { 4:{stoneMin: 8, stoneMax: 10}, 5:{cardBack: 14},};
-const img_card = "";
+const img_card = "./images/cardBack.png";
 const img_stone = "./images/rock.png";
 const stone = "#";
 
@@ -33,6 +33,7 @@ let isDrawing = false;
 let hintLeft = maxHint;
 let hintTiles = [];
 let spiral = [];
+let pickTiles = [];
 
 menuGame.style.display = "none";
 
@@ -52,6 +53,7 @@ function SetLv(level) {
     overlay.style.display = "none";
     hintLeft = maxHint;
     hintTiles = [];
+    pickTiles = [];
 
     updateHint();
     spiral = spiralOder(rows, cols);
@@ -186,9 +188,44 @@ function level4() {
     }
 }
 
-//level5
+//level5-dồn ra cạnh và có thẻ úp
 function level5() {
+     const halfRow = Math.floor(rows / 2);
+     const halfCol = Math.floor(cols / 2);
 
+     //ngang
+    for (let row = 0; row < rows; row++) {  //trái
+        const tiles = [];
+        for (let col = 0; col < halfCol; col++) {
+            if (board[row][col] !== "") tiles.push(board[row][col]);
+        }
+        for (let col = 0; col < halfCol; col++) board[row][col] = tiles[col] ?? "";
+    }
+    for (let row = 0; row < rows; row++) {  //phải
+        const tiles = [];
+        for (let col = cols - halfCol; col < cols; col++) {
+            if (board[row][col] !== "") tiles.push(board[row][col]);
+        }
+        for (let col = cols - halfCol; col < cols; col++) board[row][col] = "";
+        for (let i = 0; i < tiles.length; i++) board[row][cols - tiles.length + i] = tiles[i];
+    }
+
+    //dọc
+    for (let col = 0; col < cols; col++) {  //trên
+        const tiles = [];
+        for (let row = 0; row < halfRow; row++) {
+            if (board[row][col] !== "") tiles.push(board[row][col]);
+        }
+        for (let row = 0; row < halfRow; row++) board[row][col] = tiles[row] ?? "";
+    }
+    for (let col = 0; col < cols; col++) {  //dưới
+        const tiles = [];
+        for (let row = rows - halfRow; row < rows; row++) {
+            if (board[row][col] !== "") tiles.push(board[row][col]);
+        }
+        for (let row = rows - halfRow; row < rows; row++) board[row][col] = "";
+        for (let i = 0; i < tiles.length; i++) board[rows - tiles.length + i][col] = tiles[i];
+    }
 }
 
 //level6
@@ -281,6 +318,18 @@ function createBoard(){
             }
         }
     }
+
+    if (currentLevel === 5) {
+        const cell = [];
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) cell.push([row, col]);
+        }
+        shuffleArray(cell);
+        for (let i = 0; i < level_rule[5].cardBack; i++) {
+            const [row, col] = cell[i];
+            board[row][col] = -board[row][col];
+        }
+    }
 }
 
 //ve bang game
@@ -293,9 +342,8 @@ function drawBoard() {
         for (let col = 0; col < cols; col++) {
             const id = board[row][col];
 
-            if (id === "") {
-                continue;
-            }
+            if (id === "") continue;
+
             const x = col * cellSize;
             const y = row * cellSize;
 
@@ -309,9 +357,13 @@ function drawBoard() {
                 svg.appendChild(g);
                 continue;
             }
+            const flip = Math.abs(id);
 
             const isPick = pick !== null && pick.row === row && pick.col === col;
             const isHint = hintTiles.some(function (tile) {
+                return tile.row === row && tile.col === col;
+            })
+            const isPickTile = pickTiles.some(function (tile) {
                 return tile.row === row && tile.col === col;
             })
             const rect = createSVG("rect", {
@@ -322,7 +374,7 @@ function drawBoard() {
                 rx: 10
             });
             const img = createSVG("image", {
-                href: img_path + id + img_ext,
+                href: img_path + Math.abs(id) + img_ext,
                 x: x +10,
                 y: y +10,
                 width: cellSize -20,
@@ -330,7 +382,7 @@ function drawBoard() {
             })
 
             const gr = createSVG("g", {
-                class: isPick ? "tile picked" : (isHint ? "tile hint" : "tile")
+                class: (isPick || isPickTile) ? "tile picked" : (isHint ? "tile hint" : "tile")
             });
             gr.appendChild(rect);
             gr.appendChild(img);
@@ -338,6 +390,23 @@ function drawBoard() {
                 selectTitle(row, col);
             });
             svg.appendChild(gr);
+
+            //vẽ thẻ úp
+            if (id < 0 && !isPickTile && !isPick) {
+                const cb = createSVG("g", { class: "tile cardBack"});
+                cb.appendChild(createSVG("rect", {
+                    x: x + 3, y: y + 3,
+                    width: cellSize - 6, height: cellSize - 6, rx: 10
+                }));
+                cb.appendChild(createSVG("image", {
+                    href: img_card,
+                    x: x + 10, y: y + 10,
+                    width: cellSize - 20, height: cellSize - 20,
+                }))
+                cb.addEventListener("click", function () {selectTitle(row, col)});
+                svg.appendChild(cb);
+                continue;
+            }
         }
     }
 }
@@ -400,20 +469,30 @@ function selectTitle(row, col) {
     }
     const firtTile = board[pick.row][pick.col];
     const secondTile = board[row][col];
+    const cardFlip = firtTile < 0 || secondTile < 0;
+    const same = Math.abs(firtTile) === Math.abs(secondTile);
+    const path = same ? findPath(pick.row, pick.col, row, col) : [];
 
-    if (firtTile !== secondTile) {
-        pick = {row: row, col: col};
-        drawBoard();
-        return;
-    }
-
-    //2 o giong
-    const path = findPath(pick.row, pick.col, row, col);
+    //ko ghép được
     if (path.length === 0) {
-        pick = {row: row, col: col};
-        drawBoard();
+        if (cardFlip) {
+            isDrawing = true;
+            pickTiles = [{row: pick.row, col: pick.col}, {row: row, col: col}];
+            pick = null;
+            drawBoard();
+            setTimeout(function () {
+                pickTiles = [];
+                isDrawing = false;
+                drawBoard();
+            }, 500);
+        } else {
+            pick = {row: row, col: col};
+            drawBoard();
+        }
         return;
     }
+
+    //ghép được
     isDrawing = true;
     drawLine(path);
     const firstPick = pick;
@@ -532,7 +611,7 @@ function hint() {
         for (let col1 = 0; col1 < cols; col1++) {
             const firtTile = board[row1][col1];
 
-            if (firtTile === "" || firtTile === stone) continue;
+            if (firtTile === "" || firtTile === stone || firtTile < 0) continue;
             for (let row2 = row1; row2 < rows; row2++) {
                 const startCol = row1 === row2 ? col1 + 1 : 0;      //cùng hàng thì bắt đầu ở ô tiếp theo
 
