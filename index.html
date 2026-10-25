@@ -5,7 +5,250 @@
     <title>Pikachu</title>
 
     <script src="game.js" defer></script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100%;
+            margin: 0;
+            background: #5b76a5;
+            color: #f4f4f8;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            padding: 24px 12px 40px;
+        }
+
+        h1 {
+            font-family: sans-serif;
+            font-weight: 800;
+            font-size: 32px;
+            margin: 4px 0;
+        }
+
+        .menu-lv {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: #232a52;
+            border-radius: 16px;
+            padding: 36px 28px;
+            margin-top: 20px;
+        }
+        .menu-lv p {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .level-button {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 200px;
+        }
+        .level-button .level-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #e6c429;
+            border-radius: 1000px;
+            padding: 16px;
+            font-weight: 600;
+        }
+        .level-button .level-btn:hover {
+            background: #ff6b6b;
+        }
+        .level-button .level-btn:active {
+            transform: scale(1.1);
+        }
+
+        .menu-game {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .left-panel {
+            width: 180px;
+            padding: 20px;
+            background: #464d93;
+            border-radius: 16px;
+        }
+
+        .menu {
+            height: 100px;
+            display: flex;
+            gap: 16px;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .menu span {
+            color: #ff6b6b;
+        }
+
+        #board {
+            width: 1150px;
+            height: 700px;
+            justify-content: center;
+            position: relative;
+            padding: 10px;
+            display: grid;
+            gap: 4px;
+            background: #232a52;
+            border: 2px solid #ff6b6b;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        #game {
+            justify-content: center;
+            overflow: visible;
+            display: block;
+            width: 1050px;
+            height: 700px;
+        }
+        #game .path-line {
+            fill: none;
+            stroke: #ff6b6b;
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            pointer-events: none;
+        }
+        #game .tile {
+            cursor: pointer;
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: transform 0.2s ease;
+        }
+        #game .tile rect {
+            fill: #e6c429;
+            stroke: #ff6b6b;
+            stroke-width: 2;
+            transition: fill 0.2s ease;
+        }
+        #game .tile text {
+            fill: #14123a;
+            font-family: sans-serif;
+            font-weight: 800;
+        }
+        #game .tile:hover {
+            transform: scale(1.1);
+        }
+        #game .tile:hover rect {
+            stroke: #e6c429;
+        }
+        #game .tile.picked {
+            transform: scale(1.1);
+        }
+        #game .tile.picked rect {
+            fill: #f8efcf;
+            stroke: #ff6b6b;
+            stroke-width: 4;
+        }
+        #game .tile.hint {
+            transform: scale(1.1);
+        }
+        #game .tile.hint rect {
+            fill: #fff4b8;
+            stroke: #61dafb;
+            stroke-width: 5;
+        }
+
+        #overlay {
+            inset: 0;
+            position: absolute;
+            background: rgba(10, 12, 30, 0.92);
+            border-radius: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            text-align: center;
+            padding: 16px;
+        }
+        #overlay p {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+        #overlay button {
+            padding: 10px 28px;
+            box-shadow: 0 4px 0px rgba(115, 93, 7, 0.4);
+        }
+        #overlay button:hover {
+            background: #ffe074;
+        }
+
+        .hint-button {
+            min-width: 100px;
+            padding: 10px 14px;
+            border: 2px solid #ffe66d;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .hint-button:hover {
+            transform: translate(-3px) scale(1);
+        }
+
+        .ice {
+            fill: rgba(150, 250, 250, 0.55);
+            stroke: #7fd4ff;
+            stroke-width: 3;
+            pointer-events: none;
+        }
+        .hammer-button.active {
+            outline: 3px solid #7fd4ff;
+        }
+
+        .shuffle {
+            background: #5a4d45;
+            color: white;
+            box-shadow: 0 4px 0 rgba(120, 30, 30, 0.2);
+        }
+        .shuffle:hover {
+            background: #ff8a8a;
+        }
+        .shuffle:active {
+            box-shadow: 0 4px 20px rgba(115, 93, 7, 0.4);
+            transform: scale(0.95);
+        }
+
+        .restart-button {
+            display: flex;
+            gap: 16px;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .restart-button button {
+            padding: 10px 28px;
+            box-shadow: 0 4px 0px rgba(115, 93, 7, 0.4);
+        }
+        .restart-button button:hover {
+            background: #ffe074;
+        }
+
+        .back-to-menu {
+            background: white;
+            border: 2px solid white;
+        }
+        .back-to-menu:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        /*# sourceMappingURL=style.css.map */
+    </style>
 </head>
 <body>
 
