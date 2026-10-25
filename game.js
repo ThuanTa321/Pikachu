@@ -10,6 +10,7 @@ const level_rule =    { 4:{stoneMin: 8, stoneMax: 10}, 5:{cardBack: 14},};
 const img_card = "./images/cardBack.png";
 const img_stone = "./images/rock.png";
 const stone = "#";
+const maxHammer = 999;
 
 const svg = document.getElementById("game");
 const scoreText = document.getElementById("score");
@@ -21,6 +22,8 @@ const hintButton = document.getElementById("hint");
 const hintCount = document.getElementById("hint-count");
 const overlay = document.getElementById("overlay");
 const nextLevel = document.getElementById("next-level");
+const hammerButton = document.getElementById("hammer");
+const hammerCount = document.getElementById("hammer-count");
 
 let board = [];
 let pick = null;
@@ -34,6 +37,10 @@ let hintLeft = maxHint;
 let hintTiles = [];
 let spiral = [];
 let pickTiles = [];
+let ice = [];
+let hammerLeft = maxHammer;
+let hammerMode = false;
+let iceCount = 0;
 
 menuGame.style.display = "none";
 
@@ -54,8 +61,12 @@ function SetLv(level) {
     hintLeft = maxHint;
     hintTiles = [];
     pickTiles = [];
+    hammerLeft = maxHammer;
+    hammerMode = false;
+    iceCount = 0;
 
     updateHint();
+    updateHammer();
     spiral = spiralOder(rows, cols);
     createBoard();
     drawBoard();
@@ -224,9 +235,83 @@ function level5() {
     }
 }
 
-//level6
-function level6() {
+//level6-co che dong va pha bang
+function updateHammer() {   //bua
+    hammerCount.textContent = hammerLeft;
+    hammerButton.disabled = hammerLeft <= 0;
+    hammerButton.style.display = currentLevel === 6 ? "" : "none";
+    hammerButton.classList.toggle("active", hammerMode);
+}
+function useHammer() {  //chon bua
+    if (isDrawing || isOver || hammerLeft <= 0) return;
+    hammerMode = !hammerMode;
+    pick = null;
+    updateHammer();
+    drawBoard();
+}
+function useHammerAt(row, col) {    //pha bang 2x2
+    let broke = false;
+    for (let r = row; r <= row + 1; r++) {
+        for (let c = col; c <= col + 1; c++) {
+            if (r < rows && c < cols && ice[r][c]) {
+                ice[r][c] = false;
+                broke = true;
+            }
+        }
+    }
+    if (broke) {
+        hammerLeft--;
+        hammerMode = false;
+        iceCount = 0;
+        updateHammer();
+        drawBoard();
+    }
+}
+function level6(r1, c1, r2, c2) {   //pha bang va lan bang
+    const cell = [[r1, c1], [r2, c2]];
+    const dir = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+    let broke = false;
 
+    for (let i = 0; i < cell.length; i++) {
+        for (let j = 0; j < 4; j++) {
+            const row = cell[i][0] + dir[j][0];
+            const col = cell[i][1] + dir[j][1];
+            if (row >= 0 && row < rows && col >= 0 && col < cols && ice[row][col]) {
+                ice[row][col] = false;
+                broke = true;
+            }
+        }
+    }
+
+    if (broke) {
+        iceCount = 0;
+        return;
+    }
+    iceCount++;
+    if (iceCount > 1) {
+        spreadIce(); spreadIce(); spreadIce(); spreadIce();
+        iceCount = 0;
+    }
+}
+function spreadIce() {  //bang lan
+    const dir = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+    const random = [];
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            if (ice[row][col]) continue;
+            if (board[row][col] === "" || board[row][col] === stone) continue;
+            for (let j = 0; j < 4; j++) {
+                const r = row + dir[j][0];
+                const c = col + dir[j][1];
+                if (r >= 0 && r < rows && c >= 0 && c < cols && ice[r][c]) {
+                    random.push([row, col]); break;
+                }
+            }
+        }
+    }
+    if (random.length === 0) return;
+    const target = random[Math.floor(Math.random() * random.length)];
+    ice[target[0]][target[1]] = true;
 }
 
 //tinh gio
@@ -327,6 +412,21 @@ function createBoard(){
             board[row][col] = -board[row][col];
         }
     }
+
+    ice = [];
+    for (let row = 0; row < rows; row++) {  //tao bang
+        ice[row] = [];
+        for (let col = 0; col < cols; col++) ice[row][col] = false;
+    }
+    if (currentLevel === 6) {   //tao 2-3 vung bang
+        const iceRan = Math.random() < 0.5 ? 2 : 3;
+        const plus = [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]];
+        for (let i = 0; i < iceRan; i++) {
+            const row = 1 + Math.floor(Math.random() * (rows - 2));//-2 de ko nam ngoai cung
+            const col = 1 + Math.floor(Math.random() * (cols - 2));
+            for (let j = 0; j < plus.length; j++) ice[row + plus[j][0]] [col + plus[j][1]] = true;
+        }
+    }
 }
 
 //ve bang game
@@ -406,6 +506,17 @@ function drawBoard() {
             }
         }
     }
+    //ve bang
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            if (ice[row][col] && board[row][col] !== "") {
+                svg.appendChild(createSVG("rect", {
+                    x: col * cellSize + 3, y: row * cellSize + 3,
+                    width: cellSize - 6, height: cellSize - 6, rx: 10, class: "ice"
+                }))
+            }
+        }
+    }
 }
 
 //tron lai
@@ -449,6 +560,11 @@ function selectTitle(row, col) {
     if (isOver || isDrawing) return;
     const clickedTile = board[row][col];
     if (clickedTile === "") return;
+    if (hammerMode) {
+        useHammerAt(row, col);
+        return;
+    }
+    if (ice[row][col]) return;
     //chua chon thi luu o
     if (pick === null) {
         pick = {
@@ -499,7 +615,7 @@ function selectTitle(row, col) {
         score = score + 10;
         scoreText.textContent = score;
         pick = null;
-        applyLevelEffect();
+        applyLevelEffect(firstPick.row, firstPick.col, row, col);
         isDrawing = false;
         drawBoard();
         checkWin();
@@ -575,7 +691,7 @@ function findPath(r1, c1, r2, c2) {
     return [];
 }
 
-function applyLevelEffect() {
+function applyLevelEffect(r1, c1, r2, c2) {
     switch (currentLevel) {
         case 1:
             break;
@@ -592,7 +708,7 @@ function applyLevelEffect() {
             level5();
             break;
         case 6:
-            level6();
+            level6(r1, c1, r2, c2);
             break;
     }
 }
@@ -608,13 +724,14 @@ function hint() {
         for (let col1 = 0; col1 < cols; col1++) {
             const firtTile = board[row1][col1];
 
-            if (firtTile === "" || firtTile === stone || firtTile < 0) continue;
+            if (firtTile === "" || firtTile === stone || firtTile < 0 || ice[row1][col1]) continue;
             for (let row2 = row1; row2 < rows; row2++) {
                 const startCol = row1 === row2 ? col1 + 1 : 0;      //cùng hàng thì bắt đầu ở ô tiếp theo
 
                 for (let col2 = startCol; col2 < cols; col2++) {
                     const secondTile = board[row2][col2];
                     if (firtTile !== secondTile) continue;
+                    if (ice[row2][col2]) continue;
                     const path = findPath(row1, col1, row2, col2); // dùng BFS
                     if (path.length > 0) {
                         hintLeft--;
@@ -633,7 +750,7 @@ function hint() {
                                 scoreText.textContent = score;
                                 hintTiles = [];
                                 pick = null;
-                                applyLevelEffect();
+                                applyLevelEffect(row1, col1, row2, col2);
                                 isDrawing = false;
                                 drawBoard();
                                 checkWin();
