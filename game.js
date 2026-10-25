@@ -79,7 +79,7 @@ function level2() {
                 tiles.push(board[row][col]);
             }
         }
-        for (let row = 0; row < rows; row++) board[row][col] = tiles[row] ?? "";
+        for (let row = 0; row < rows; row++) board[row][col] = tiles[row] !== undefined ? tiles[row] : "";
     }
     for (let col = 1; col < cols; col += 2) {   //dò cột chẵn
         const tiles = [];
@@ -100,7 +100,7 @@ function level2() {
                 tiles.push(board[row][col]);
             }
         }
-        for (let col = 0; col < cols; col++) board[row][col] = tiles[col] ?? "";
+        for (let col = 0; col < cols; col++) board[row][col] = tiles[col] !== undefined ? tiles[col] : "";
     }
     for (let row = 0; row < rows; row += 2) {
         const tiles = [];
@@ -147,18 +147,14 @@ function level3() {
     }
 }
 //level4 - don xoan oc va da chan duong
-function spiralOder(rows, cols) {   //xoắn từ trong ra ngoài
+function spiralOder(rows, cols) {   //xoắn từ ngoài vào trong
     const oder = [];
     let top = 0, bottom = rows - 1, left = 0, right = cols - 1;
     while (top <= bottom && left <= right) {
         for (let col = left; col <= right; col++) oder.push([top, col]);
         for (let row = top + 1; row <= bottom; row++) oder.push([row, right]);
-        if (top < bottom) {
-            for (let col = right -1; col >= left; col--) oder.push([bottom, col]);
-        }
-        if (left < right) {
-            for (let row = bottom -1; row > top; row--) oder.push([row, left]);
-        }
+        for (let col = right - 1; col >= left; col--) oder.push([bottom, col]);
+        for (let row = bottom - 1; row > top; row--) oder.push([row, left]);
         top++, bottom--, left++, right--;
     }
     return oder;
@@ -173,7 +169,7 @@ function move(from, to) {
     for (let i = from; i <= to; i++) {  //xep lai
         const row = spiral[i][0];
         const col = spiral[i][1];
-        board[row][col] = tiles[i - from] ?? "";
+        board[row][col] = tiles[i - from] !== undefined ? tiles[i - from] : "";
     }
 }
 function level4() {
@@ -199,7 +195,7 @@ function level5() {
         for (let col = 0; col < halfCol; col++) {
             if (board[row][col] !== "") tiles.push(board[row][col]);
         }
-        for (let col = 0; col < halfCol; col++) board[row][col] = tiles[col] ?? "";
+        for (let col = 0; col < halfCol; col++) board[row][col] = tiles[col] !== undefined ? tiles[col] : "";
     }
     for (let row = 0; row < rows; row++) {  //phải
         const tiles = [];
@@ -216,7 +212,7 @@ function level5() {
         for (let row = 0; row < halfRow; row++) {
             if (board[row][col] !== "") tiles.push(board[row][col]);
         }
-        for (let row = 0; row < halfRow; row++) board[row][col] = tiles[row] ?? "";
+        for (let row = 0; row < halfRow; row++) board[row][col] = tiles[row] !== undefined ? tiles[row] : "";
     }
     for (let col = 0; col < cols; col++) {  //dưới
         const tiles = [];
@@ -295,7 +291,7 @@ function createSVG(name, attributes) {
 //tao bang game
 function createBoard(){
     const stoneSet = new Set();
-    if (currentLevel === 4) {
+    if (currentLevel === 4) {   //đá ngẫu nhiên
         const count = Math.random() < 0.5 ? 8 : 10;
         while (stoneSet.size < count) {
             stoneSet.add(Math.floor(Math.random() * rows * cols));
@@ -319,14 +315,15 @@ function createBoard(){
         }
     }
 
-    if (currentLevel === 5) {
+    if (currentLevel === 5) { //thẻ úp ngẫu nhiên
         const cell = [];
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) cell.push([row, col]);
         }
         shuffleArray(cell);
         for (let i = 0; i < level_rule[5].cardBack; i++) {
-            const [row, col] = cell[i];
+            const row = cell[i][0];
+            const col = cell[i][1];
             board[row][col] = -board[row][col];
         }
     }
